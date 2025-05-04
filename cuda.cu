@@ -147,3 +147,5 @@ int main() {
 
     return 0;
 }
+nvcc -o yy_program yy.cu
+  ./yy_program
