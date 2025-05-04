@@ -107,6 +107,176 @@ int main() {
 
     return 0;
 }
+//min
+#include <iostream>
+#include <vector>
+#include <omp.h>
+using namespace std;
+
+int parallelMin(vector<int> vec) {
+    int min_val = vec[0];
+    #pragma omp parallel for
+    for (int i = 1; i < vec.size(); i++) {
+        if (vec[i] < min_val) {
+            min_val = vec[i];
+        }
+    }
+    return min_val;
+}
+
+int parallelMax(vector<int> vec) {
+    int max_val = vec[0];
+    #pragma omp parallel for
+    for (int i = 1; i < vec.size(); i++) {
+        if (vec[i] > max_val) {
+            max_val = vec[i];
+        }
+    }
+    return max_val;
+}
+
+int parallelSum(vector<int> vec) {
+    int sum = 0;
+    #pragma omp parallel for
+    for (int i = 0; i < vec.size(); i++) {
+        sum += vec[i];
+    }
+    return sum;
+}
+
+float parallelAverage(vector<int> vec) {
+    int sum = parallelSum(vec);
+    float avg = float(sum) / vec.size();
+    return avg;
+}
+
+int main() {
+    int n;
+    cout << "Enter the number of elements: ";
+    cin >> n;
+
+    vector<int> vec(n);
+    cout << "Enter the elements: ";
+    for (int i = 0; i < n; ++i) {
+        cin >> vec[i];
+    }
+
+    int min_val = parallelMin(vec);
+    cout << "Minimum value: " << min_val << endl;
+
+    int max_val = parallelMax(vec);
+    cout << "Maximum value: " << max_val << endl;
+
+    int sum = parallelSum(vec);
+    cout << "Sum of values: " << sum << endl;
+
+    float avg = parallelAverage(vec);
+    cout << "Average of values: " << avg << endl;
+
+    return 0;
+}
+
+//dfs
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <omp.h>
+
+using namespace std;
+
+struct Graph {
+    int V;
+    vector<vector<int>> adj;
+
+    Graph(int V) {
+        this->V = V;
+        adj.resize(V);
+    }
+
+    void addEdge(int u, int v) {
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    void BFS(int start) {
+        vector<bool> visited(V, false);
+        queue<int> q;
+        visited[start] = true;
+        q.push(start);
+
+        while (!q.empty()) {
+            int u = q.front();
+            q.pop();
+            cout << u << " ";
+
+            #pragma omp parallel for
+            for (int i = 0; i < adj[u].size(); i++) {
+                int v = adj[u][i];
+                if (!visited[v]) {
+                    #pragma omp critical
+                    {
+                        visited[v] = true;
+                        q.push(v);
+                    }
+                }
+            }
+        }
+        cout << endl;
+    }
+
+    void DFS(int start) {
+        vector<bool> visited(V, false);
+        #pragma omp parallel
+        {
+            #pragma omp single nowait
+            {
+                DFSUtil(start, visited);
+            }
+        }
+        cout << endl;
+    }
+
+    void DFSUtil(int u, vector<bool>& visited) {
+        visited[u] = true;
+        cout << u << " ";
+
+        # pragma omp parallel for
+        for (int i = 0; i < adj[u].size(); i++) {
+            int v = adj[u][i];
+            if (!visited[v]) {
+                DFSUtil(v, visited);
+            }
+        }
+    }
+};
+
+int main() {
+    int V;
+    cout << "Enter the number of vertices: ";
+    cin >> V;
+
+    Graph g(V);
+
+    int edgeCount;
+    cout << "Enter the number of edges: ";
+    cin >> edgeCount;
+
+    cout << "Enter the edges (in format 'source destination'): \n";
+    for (int i = 0; i < edgeCount; i++) {
+        int u, v;
+        cin >> u >> v;
+        g.addEdge(u, v);
+    }
+
+    cout << "BFS traversal starting from node 0: ";
+    g.BFS(0);
+
+    cout << "DFS traversal starting from node 0: ";
+    g.DFS(0);
+
+    return 0;
+}
+
 //cuda 
 #include <stdio.h>
 #include <stdlib.h>
