@@ -100,3 +100,5 @@ int main() {
 
     return 0;
 }
+gcc prg.cpp -o prg
+./prg
