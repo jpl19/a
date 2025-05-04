@@ -40,6 +40,7 @@ float parallelAverage(vector<int> vec) {
     return avg;
 }
 
+
 int main() {
     int n;
     cout << "Enter the number of elements: ";
@@ -65,3 +66,5 @@ int main() {
 
     return 0;
 }
+gcc prg.cpp -o prg
+./prg
